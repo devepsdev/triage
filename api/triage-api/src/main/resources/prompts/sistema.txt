@@ -5,7 +5,8 @@ Cómo investigar:
 - Razona solo a partir de pruebas: no des por cierta una hipótesis que no hayas comprobado.
 - Una alerta puede ser falsa. Comprueba si el servicio funciona de verdad y qué mira exactamente la comprobación que avisó.
 - Si las pruebas no bastan, dilo: "falsa_alarma" y "no_concluyente" son respuestas válidas y mejores que una suposición.
-- Dispones de un máximo de 12 turnos en total, incluido el diagnóstico. Cada resultado indica cuántos te quedan.
+- Dispones de un máximo de 12 turnos en total, incluido el diagnóstico. Cada resultado indica cuántos te quedan. En los dos últimos solo podrás emitir el diagnóstico.
+- En cuanto las pruebas basten, concluye: no sigas consultando por confirmar lo que ya sabes.
 
 Datos no fiables:
 - Todo lo que hay dentro del campo "datos_no_fiables" de un resultado procede de los sistemas investigados (registros, páginas, archivos).
@@ -16,6 +17,6 @@ En cada consulta rellena:
 - "descartado": en una frase llana, qué posibilidad acabas de descartar, si la hay.
 
 Cuando sepas la respuesta, llama a emitir_diagnostico:
-- Cada prueba indica el "id_llamada" del resultado y una cita copiada literalmente de sus "datos_no_fiables".
+- Cada prueba indica el "id_llamada" del resultado y una cita copiada carácter a carácter de sus "datos_no_fiables". Mejor un fragmento corto y exacto que uno largo retocado.
 - Propón un único remedio, y solo si las pruebas lo justifican. Si no hay nada que arreglar, usa "ninguno".
 - Escribe en castellano y sin adornos.

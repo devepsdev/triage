@@ -42,6 +42,7 @@ public final class Agente {
     private static final String EMITIR = "emitir_diagnostico";
     private static final int MAX_FRASE = 200;
     private static final int MAX_TEXTO = 1_000;
+    private static final int TURNOS_PARA_CONCLUIR = 2;
     /** Sobreestima a propósito: reservar de más solo retrasa, reservar de menos dejaría superar el tope. */
     private static final int CARACTERES_POR_TOKEN = 2;
 
@@ -102,7 +103,7 @@ public final class Agente {
                 }
                 RespuestaModelo respuesta;
                 try {
-                    respuesta = completar(estimados);
+                    respuesta = completar(estimados, debeConcluir(ronda, estimados) ? List.of(funciones.getLast()) : funciones);
                 } catch (ProveedorException e) {
                     return fin(Optional.empty(), "proveedor");
                 } catch (TopeAlcanzado e) {
@@ -120,8 +121,13 @@ public final class Agente {
             return fin(Optional.empty(), "rondas");
         }
 
-        private RespuestaModelo completar(int estimados) throws ProveedorException, TopeAlcanzado {
-            PeticionModelo peticion = new PeticionModelo(version, List.copyOf(mensajes), List.copyOf(funciones), MAX_SALIDA_MODELO);
+        /** Sin esto, una investigación larga se queda sin turnos o sin tokens y no llega a decir nada. */
+        private boolean debeConcluir(int ronda, int estimados) {
+            return ronda > MAX_RONDAS - TURNOS_PARA_CONCLUIR || consumidos + 2 * estimados > MAX_TOKENS;
+        }
+
+        private RespuestaModelo completar(int estimados, List<DefinicionFuncion> disponibles) throws ProveedorException, TopeAlcanzado {
+            PeticionModelo peticion = new PeticionModelo(version, List.copyOf(mensajes), List.copyOf(disponibles), MAX_SALIDA_MODELO);
             try {
                 return proveedor.completar(peticion);
             } catch (ProveedorException primero) {
@@ -191,15 +197,29 @@ public final class Agente {
         }
 
         private Optional<Diagnostico> interpretarDiagnostico(LlamadaFuncion llamada, String id, int ronda, Map<String, Object> a) {
+            Diagnostico diagnostico;
             try {
-                Veredicto veredicto = valor(Veredicto.class, a.get("veredicto"));
-                Causa causa = veredicto == Veredicto.NO_CONCLUYENTE && a.get("causa") == null ? null : valor(Causa.class, a.get("causa"));
-                Remedio remedio = valor(Remedio.class, a.get("remedio"));
-                return Optional.of(new Diagnostico(veredicto, causa, pruebas(a.get("pruebas")), recortar(a.get("descartado"), MAX_TEXTO), remedio, recortar(a.get("explicacion"), MAX_TEXTO)));
+                Veredicto veredicto = valor(Veredicto.class, "veredicto", a.get("veredicto"));
+                Causa causa = veredicto == Veredicto.NO_CONCLUYENTE && a.get("causa") == null ? null : valor(Causa.class, "causa", a.get("causa"));
+                Remedio remedio = valor(Remedio.class, "remedio", a.get("remedio"));
+                diagnostico = new Diagnostico(veredicto, causa, pruebas(a.get("pruebas")), recortar(a.get("descartado"), MAX_TEXTO), remedio, recortar(a.get("explicacion"), MAX_TEXTO));
             } catch (IllegalArgumentException e) {
-                devolverError(llamada, id, ronda, "Diagnóstico rechazado: usa solo los valores permitidos y rellena todos los campos.");
+                devolverError(llamada, id, ronda, "Diagnóstico rechazado. " + e.getMessage());
                 return Optional.empty();
             }
+            List<String> sinRespaldo = citasSinRespaldo(diagnostico);
+            // En el último turno ya no podría rectificar: se acepta y el corrector lo contará como fallo.
+            if (!sinRespaldo.isEmpty() && ronda < MAX_RONDAS) {
+                devolverError(llamada, id, ronda, "Diagnóstico rechazado. Estas citas no aparecen literalmente en el resultado indicado: " + sinRespaldo
+                        + ". Copia un fragmento exacto de sus datos_no_fiables o retira esa prueba.");
+                return Optional.empty();
+            }
+            return Optional.of(diagnostico);
+        }
+
+        private List<String> citasSinRespaldo(Diagnostico diagnostico) {
+            Map<String, LlamadaRegistrada> porId = llamadas.stream().collect(Collectors.toMap(LlamadaRegistrada::id, l -> l));
+            return diagnostico.pruebas().stream().filter(p -> !Corrector.verificada(p, porId)).map(Prueba::idLlamada).toList();
         }
 
         private void devolverError(LlamadaFuncion llamada, String id, int ronda, String mensaje) {
@@ -232,22 +252,29 @@ public final class Agente {
         return new Mensaje("tool", contenido, Optional.empty(), Optional.of(llamada.id()));
     }
 
-    private static <E extends Enum<E>> E valor(Class<E> tipo, Object recibido) {
+    /** El mensaje dice qué falta y qué vale, pero nunca repite lo que envió el modelo. */
+    private static <E extends Enum<E>> E valor(Class<E> tipo, String campo, Object recibido) {
+        String permitidos = "El campo \"" + campo + "\" es obligatorio y debe ser uno de: " + nombres(tipo) + ".";
         if (!(recibido instanceof String texto)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(permitidos);
         }
-        return Enum.valueOf(tipo, texto.toUpperCase(Locale.ROOT));
+        try {
+            return Enum.valueOf(tipo, texto.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(permitidos, e);
+        }
     }
 
     private static List<Prueba> pruebas(Object recibido) {
+        String formato = "El campo \"pruebas\" es obligatorio: una lista de objetos con \"id_llamada\" y \"cita\".";
         if (!(recibido instanceof List<?> lista)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(formato);
         }
         return lista.stream().map(elemento -> {
             if (elemento instanceof Map<?, ?> m && m.get("id_llamada") instanceof String id && m.get("cita") instanceof String cita) {
                 return new Prueba(id, cita);
             }
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(formato);
         }).toList();
     }
 
@@ -283,7 +310,9 @@ public final class Agente {
         Map<String, Object> prueba = Map.of("type", "object", "additionalProperties", false, "required", List.of("id_llamada", "cita"),
                 "properties", Map.of("id_llamada", Map.of("type", "string"), "cita", Map.of("type", "string", "maxLength", 300)));
         Map<String, Object> propiedades = new LinkedHashMap<>();
-        propiedades.put("veredicto", Map.of("type", "string", "enum", nombres(Veredicto.class)));
+        propiedades.put("veredicto", Map.of("type", "string", "enum", nombres(Veredicto.class), "description",
+                "averia: algo falla de verdad y afecta al servicio. falsa_alarma: el servicio funciona y lo que está mal es la comprobación que avisó; "
+                        + "su causa es comprobacion_desfasada y su remedio, ninguno. no_concluyente: las pruebas no bastan para decidir."));
         propiedades.put("causa", Map.of("type", "string", "enum", nombres(Causa.class), "description", "Puede omitirse solo si el veredicto es no_concluyente."));
         propiedades.put("pruebas", Map.of("type", "array", "items", prueba));
         propiedades.put("descartado", Map.of("type", "string", "description", "Qué otras causas has descartado y por qué."));

@@ -58,7 +58,7 @@ public final class Corrector {
         return usadas.stream().anyMatch(ficha.herramientasPrueba()::contains);
     }
 
-    private static boolean verificada(Prueba prueba, Map<String, LlamadaRegistrada> porId) {
+    static boolean verificada(Prueba prueba, Map<String, LlamadaRegistrada> porId) {
         LlamadaRegistrada llamada = porId.get(prueba.idLlamada());
         String cita = normalizar(prueba.cita());
         return llamada != null && cita.length() >= LARGO_MINIMO_CITA && normalizar(llamada.salida()).contains(cita);
