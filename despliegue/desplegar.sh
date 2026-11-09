@@ -4,7 +4,6 @@
 # Desde Git Bash:
 #   bash despliegue/desplegar.sh                     lista todas las fases, sin hacer nada
 #   bash despliegue/desplegar.sh --dry-run abrir     lista una fase, sin hacer nada
-#   bash despliegue/desplegar.sh --aplicar claves    pide las claves sin mostrarlas y las guarda en el VPS
 #   bash despliegue/desplegar.sh --aplicar instalar  servicios sin abrir la web; no activa nada si falla el aislamiento
 #   bash despliegue/desplegar.sh --aplicar certificado
 #   bash despliegue/desplegar.sh --aplicar abrir     publica la web y el nginx
@@ -28,7 +27,7 @@ for argumento in "$@"; do
   case "$argumento" in
     --dry-run) MODO=simulacro ;;
     --aplicar) MODO=real ;;
-    instalar | claves | certificado | abrir | cerrar) FASE=$argumento ;;
+    instalar | certificado | abrir | cerrar) FASE=$argumento ;;
     *) echo "Argumento desconocido: $argumento" >&2; exit 2 ;;
   esac
 done
@@ -97,37 +96,10 @@ subir_paquete() {
     sudo tar -xzf - -C /opt/triage/.nuevo --no-same-owner'
 }
 
-fase_claves() {
-  titulo "Claves (se escriben sin verse y no pasan por el chat)"
-  if [ "$MODO" = simulacro ]; then
-    printf '  [este PC]  Pedir MISTRAL_API_KEY y TURNSTILE_SECRET con entrada oculta, y la sitekey pública\n'
-    printf '  [VPS]      Guardarlas en /etc/triage/api.env (600 root) por la entrada estándar; enseñar solo los nombres\n'
-    return
-  fi
-  local mistral secreto sitekey
-  read -rs -p "Clave de Mistral (no se ve): " mistral; echo
-  read -rs -p "Secreto de Turnstile (no se ve): " secreto; echo
-  read -r -p "Sitekey de Turnstile (es pública): " sitekey
-  if [ -z "$mistral" ] || [ -z "$secreto" ] || [ -z "$sitekey" ]; then
-    parar "falta algún valor; no se ha guardado nada"
-  fi
-  printf 'MISTRAL_API_KEY=%s\nTURNSTILE_SECRET=%s\nTURNSTILE_SITEKEY=%s\n' "$mistral" "$secreto" "$sitekey" | ssh_vps '
-    umask 077
-    nuevo=$(mktemp)
-    trap "rm -f \"\$nuevo\"" EXIT
-    cat > "$nuevo"
-    sudo install -d -m 700 /etc/triage
-    sudo touch /etc/triage/api.env
-    sudo grep -vE "^(MISTRAL_API_KEY|TURNSTILE_SECRET|TURNSTILE_SITEKEY)=" /etc/triage/api.env >> "$nuevo" || true
-    sudo install -m 600 -o root -g root "$nuevo" /etc/triage/api.env
-    echo "Variables guardadas:"
-    sudo cut -d= -f1 /etc/triage/api.env'
-}
-
 fase_instalar() {
   titulo "Instalar los servicios (la web sigue sin publicarse)"
   exigir "Árbol de git sin cambios pendientes: se instala exactamente lo versionado" arbol_limpio
-  exigir "Migración V2 con los precios confirmados en la consola de Mistral (sin ella la API no arranca)" hay_precios
+  exigir "Migración V2 con el precio del modelo (sin ella la API no arranca)" hay_precios
 
   local_ "Compilar y pasar las pruebas de la API (Maven)" compilar_api
   local_ "Preparar el paquete: 4 jar, unidades e imágenes" preparar_paquete
@@ -268,7 +240,6 @@ fi
 if [ -n "$FASE" ]; then
   "fase_$FASE"
 else
-  fase_claves
   fase_instalar
   fase_certificado
   fase_abrir

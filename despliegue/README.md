@@ -25,9 +25,14 @@ Los límites de memoria de cada servicio (`MemoryMax` y `-Xmx`) son valores inic
 
 Cada paso con servidor o con gasto necesita un «sí» propio.
 
-1. **Enrique:** crear el DNS `triage.deveps.dev`, el widget de Turnstile para ese dominio y una clave de Mistral exclusiva, y confirmar los precios de `mistral-small-2603` y `mistral-medium-2604` en la consola de Mistral.
-2. Añadir la migración `V2__precios.sql` con esos precios (sin ella la API no arranca) y hacer commit.
-3. `bash despliegue/desplegar.sh --aplicar claves`, escritas por Enrique en su terminal, sin que se vean.
+1. **Hecho:** DNS `triage.deveps.dev` (sin proxy de Cloudflare: si no, nginx vería la IP de Cloudflare y fallarían los topes por IP) y widget de Turnstile.
+2. **Hecho:** migración `V2__precio_mistral_small.sql`, con el precio oficial en euros de `mistral-small-2603`. Un modelo sin fila en `precio_modelo` no se puede usar.
+3. Claves, en PowerShell: toma la de Mistral del `.env` y pide el secreto de Turnstile sin mostrarlo.
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File despliegue\guardar-claves.ps1
+   ```
+
 4. `bash despliegue/desplegar.sh --aplicar instalar`. Construye las imágenes, pasa la prueba de aislamiento y solo entonces arranca los servicios.
 5. Comprobar que `triage-mcp` no puede abrir el socket de control (debe dar «Permiso denegado»):
 

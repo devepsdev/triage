@@ -20,7 +20,10 @@ public final class BaseDatosPrueba {
         JdbcDataSource datos = new JdbcDataSource();
         datos.setURL("jdbc:h2:mem:" + UUID.randomUUID() + ";MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE");
         Flyway.configure().dataSource(datos).load().migrate();
-        return JdbcClient.create(datos);
+        JdbcClient db = JdbcClient.create(datos);
+        // Cada prueba decide qué precios existen, sin depender de los reales de las migraciones.
+        db.sql("DELETE FROM precio_modelo").update();
+        return db;
     }
 
     /** Precio de prueba: no es el real, solo facilita las cuentas. */
