@@ -3,6 +3,8 @@ package dev.deveps.triage.api;
 import dev.deveps.triage.api.agente.Agente;
 import dev.deveps.triage.api.agente.Corrector;
 import dev.deveps.triage.api.agente.HerramientasMcp;
+import dev.deveps.triage.api.bateria.ComandoBateria;
+import dev.deveps.triage.api.bateria.ExportadorGrabacion;
 import dev.deveps.triage.api.investigacion.ControladorInvestigacion;
 import dev.deveps.triage.api.investigacion.Recuperacion;
 import dev.deveps.triage.api.investigacion.RepositorioInvestigacion;
@@ -16,18 +18,23 @@ import dev.deveps.triage.api.topes.HuecoUnico;
 import dev.deveps.triage.api.topes.LimitadorIp;
 import dev.deveps.triage.api.topes.Turnstile;
 import dev.deveps.triage.comun.ClienteGestor;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -37,8 +44,22 @@ public class TriageApiApplication {
     private static final URI MISTRAL = URI.create("https://api.mistral.ai/v1/chat/completions");
     private static final URI SITEVERIFY = URI.create("https://challenges.cloudflare.com/turnstile/v0/siteverify");
 
-    public static void main(String[] argumentos) {
-        SpringApplication.run(TriageApiApplication.class, argumentos);
+    public static void main(String[] argumentos) throws IOException {
+        Optional<String> grabacion = ExportadorGrabacion.solicitada(argumentos);
+        if (grabacion.isPresent()) {
+            System.out.println("Escrita: " + ExportadorGrabacion.exportar(grabacion.get(), Path.of("")));
+        } else if (Arrays.asList(argumentos).contains("--bateria")) {
+            // Sin servidor web: la API de las visitas puede seguir en marcha en su puerto.
+            System.exit(SpringApplication.exit(new SpringApplicationBuilder(TriageApiApplication.class).web(WebApplicationType.NONE).run(argumentos)));
+        } else {
+            SpringApplication.run(TriageApiApplication.class, argumentos);
+        }
+    }
+
+    @Bean
+    ComandoBateria comandoBateria(ProveedorModelo proveedor, ServicioInvestigacion.Gestor gestor, JdbcClient db, HuecoUnico hueco, ScheduledExecutorService programador, Clock reloj,
+            @Value("${triage.mcp-url}") String mcp, @Value("${triage.mistral-clave}") String clave) {
+        return new ComandoBateria(new ComandoBateria.Dependencias(proveedor, gestor, token -> new HerramientasMcp(mcp, token), db, hueco, programador, reloj, !clave.isBlank(), Path.of("")));
     }
 
     @Bean
@@ -72,8 +93,8 @@ public class TriageApiApplication {
     }
 
     @Bean
-    HuecoUnico huecoUnico() {
-        return new HuecoUnico();
+    HuecoUnico huecoUnico(@Value("${triage.hueco-archivo}") Path archivo) {
+        return new HuecoUnico(archivo);
     }
 
     @Bean

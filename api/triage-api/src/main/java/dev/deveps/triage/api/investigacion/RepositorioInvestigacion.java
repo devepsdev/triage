@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Solo lo que debe sobrevivir a un reinicio. Los eventos viven en memoria. */
-public final class RepositorioInvestigacion {
+public class RepositorioInvestigacion {
 
     public record Activa(String id, String idEntorno) {}
 
@@ -21,6 +21,31 @@ public final class RepositorioInvestigacion {
 
     public RepositorioInvestigacion(JdbcClient db) {
         this.db = db;
+    }
+
+    /** Para la batería: sus resultados van a su informe y no deben sumar en el contador público. */
+    public static RepositorioInvestigacion sinGuardar() {
+        return new RepositorioInvestigacion(null) {
+            @Override
+            void crear(String id, Caso caso, int variante, Instant instante) {
+            }
+
+            @Override
+            void estado(String id, EstadoInvestigacion estado) {
+            }
+
+            @Override
+            void entorno(String id, String idEntorno) {
+            }
+
+            @Override
+            void corregida(String id, Correccion correccion) {
+            }
+
+            @Override
+            void terminar(String id, EstadoInvestigacion estado, String motivo, Instant instante) {
+            }
+        };
     }
 
     void crear(String id, Caso caso, int variante, Instant instante) {

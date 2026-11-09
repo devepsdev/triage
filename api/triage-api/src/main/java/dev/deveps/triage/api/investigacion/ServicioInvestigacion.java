@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 
 /** Lleva cada investigación por su máquina de estados. Pase lo que pase, el entorno se destruye y el hueco se libera. */
@@ -72,9 +73,18 @@ public final class ServicioInvestigacion {
     private final Clock reloj;
     private final Tiempos tiempos;
     private final IntUnaryOperator variantes;
+    private final Function<String, Presupuesto> presupuestos;
 
     public ServicioInvestigacion(Gestor gestor, FabricaHerramientas fabrica, Agente agente, Corrector corrector, ControlGasto gasto, HuecoUnico hueco,
             RepositorioInvestigacion repositorio, ScheduledExecutorService programador, Clock reloj, Tiempos tiempos, IntUnaryOperator variantes) {
+        this(gestor, fabrica, agente, corrector, gasto, hueco, repositorio, programador, reloj, tiempos, variantes, gasto::presupuesto);
+    }
+
+    /** La batería trae su propio presupuesto: no gasta del tope diario de las visitas. */
+    public ServicioInvestigacion(Gestor gestor, FabricaHerramientas fabrica, Agente agente, Corrector corrector, ControlGasto gasto, HuecoUnico hueco,
+            RepositorioInvestigacion repositorio, ScheduledExecutorService programador, Clock reloj, Tiempos tiempos, IntUnaryOperator variantes,
+            Function<String, Presupuesto> presupuestos) {
+        this.presupuestos = presupuestos;
         this.gestor = gestor;
         this.fabrica = fabrica;
         this.agente = agente;
@@ -90,9 +100,13 @@ public final class ServicioInvestigacion {
 
     /** El hueco ya lo ha adquirido la admisión. */
     public Creada iniciar(Caso caso) {
+        return iniciar(caso, variantes.applyAsInt(Catalogo.ficha(caso).variantes()));
+    }
+
+    public Creada iniciar(Caso caso, int variante) {
         Activa a;
         try {
-            a = new Activa(caso);
+            a = new Activa(caso, variante);
             repositorio.crear(a.id, caso, a.variante, reloj.instant());
         } catch (RuntimeException e) {
             hueco.liberar();
@@ -154,9 +168,9 @@ public final class ServicioInvestigacion {
         int tokensSalida;
         BigDecimal coste = BigDecimal.ZERO;
 
-        Activa(Caso caso) {
+        Activa(Caso caso, int variante) {
             this.ficha = Catalogo.ficha(caso);
-            this.variante = variantes.applyAsInt(ficha.variantes());
+            this.variante = variante;
             this.canal = new CanalEventos(programador, tiempos.desconexion(), tiempos.latido(), () -> cortar("desconexion"));
         }
 
@@ -228,7 +242,7 @@ public final class ServicioInvestigacion {
 
         /** Tras un corte, ninguna llamada más al modelo aunque la interrupción se haya perdido por el camino. */
         private Presupuesto presupuesto() {
-            Presupuesto real = gasto.presupuesto(id);
+            Presupuesto real = presupuestos.apply(id);
             return new Presupuesto() {
                 @Override
                 public boolean reservar(int tokensMax) {
@@ -359,8 +373,8 @@ public final class ServicioInvestigacion {
                 // Sin base de datos también hay que liberar el hueco.
             }
             canal.emitir("fin", Map.of("estado", fin.name(), "motivo", motivo));
-            canal.cerrar();
             hueco.liberar();
+            canal.cerrar();
             programador.schedule(() -> activas.remove(id), CONSERVAR_TRAS_FIN.toMillis(), TimeUnit.MILLISECONDS);
         }
 

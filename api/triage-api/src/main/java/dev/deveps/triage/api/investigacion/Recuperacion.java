@@ -23,7 +23,10 @@ public final class Recuperacion implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments argumentos) {
-        recuperar();
+        // La batería es otro proceso: la API puede estar atendiendo a alguien y no hay que tocar lo suyo.
+        if (!argumentos.containsOption("bateria")) {
+            recuperar();
+        }
     }
 
     public void recuperar() {
