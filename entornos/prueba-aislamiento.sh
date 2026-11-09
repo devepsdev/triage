@@ -47,7 +47,7 @@ for i in 1 2 3 4 5 6 7 8 9 10; do
   docker exec "$SONDA" curl -fsS -m 2 http://app:8080/salud >/dev/null 2>&1 && break
   sleep 1
 done
-if docker exec "$SONDA" curl -fsS -m 2 http://app:8080/salud >/dev/null 2>&1; then
+if conecta app 8080; then
   printf '%-34s %s\n' "app:8080 (misma red)" "llega, como debe"
 else
   printf '%-34s %s\n' "app:8080 (misma red)" "NO LLEGA  <-- FALLO"
@@ -84,11 +84,12 @@ for pasarela in $(docker network ls -q | xargs docker network inspect -f '{{rang
   for puerto in $PUERTOS; do prohibido "$pasarela" "$puerto"; done
 done
 
-IP_FACIALY=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' facialy_db 2>/dev/null | awk '{print $1}')
+# Un contenedor parado no tiene IP (Docker escribe «invalid IP»): eso no cuenta como destino probado.
+IP_FACIALY=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' facialy_db 2>/dev/null | tr ' ' '\n' | grep -E '^[0-9]+(\.[0-9]+){3}$' | head -1)
 if [ -n "$IP_FACIALY" ]; then
   prohibido "$IP_FACIALY" 5432
 else
-  printf '%-34s %s\n' "facialy_db" "no existe en esta máquina"
+  printf '%-34s %s\n' "facialy_db" "SIN PROBAR (no está en marcha aquí)"
 fi
 
 for puerto in $PUERTOS; do prohibido host.docker.internal "$puerto"; done
