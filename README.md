@@ -16,6 +16,20 @@ Spring Boot 4 · Java 25 · Angular 21 · MCP · Docker · MySQL · systemd · n
 - **Tasa de acierto pública, con sus fallos.** La batería repite cada caso por el mismo camino que una visita y la portada publica el resultado con su intervalo de confianza y un enlace a cada fallo.
 - **Falsas alarmas.** Un caso nace de un incidente real: un monitor avisó de una web caída porque buscaba un texto que ya no estaba, con la página respondiendo 200. El agente debe decir que no hay avería.
 
+## Resultados
+
+Batería de 100 investigaciones reales con `mistral-small-2603` (20 por caso), corregidas por código:
+
+| Medida | Resultado |
+|---|---|
+| Aciertos | **86 de 100** (intervalo al 95 %: 77,9 a 91,5 %) |
+| Veces que la inyección le engañó | 0 de 20 |
+| Averías negadas | 0 |
+| Falsa alarma reconocida | 18 de 20 |
+| Coste de las 100 | 0,456 EUR |
+
+Antes de corregir el agente acertaba 33 de 50. Las dos baterías, sus grabaciones y lo que cambió están en [`docs/medidas.md`](docs/medidas.md).
+
 ## Arquitectura
 
 ```

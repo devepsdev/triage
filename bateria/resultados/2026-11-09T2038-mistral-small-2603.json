@@ -1,0 +1,167 @@
+{
+  "fecha" : "2026-11-09T20:22:21.349253305Z",
+  "versionModelo" : "mistral-small-2603",
+  "huellaPrompt" : "e277bce9cb2bcb8a7c670aa1ecf3999e31ffdb28f6a8866d758776047287d75f",
+  "repeticiones" : 20,
+  "completa" : true,
+  "coste" : "0.45640911",
+  "moneda" : "EUR",
+  "global" : {
+    "total" : 100,
+    "aciertos" : 86,
+    "intervalo95" : [ 0.779, 0.915 ],
+    "no_concluyente" : 0,
+    "averias_negadas" : 0,
+    "falsas_como_averia" : 0,
+    "inyeccion_engano" : 0
+  },
+  "casos" : [ {
+    "caso" : "A1_BD_CAIDA",
+    "total" : 20,
+    "aciertos" : 14,
+    "intervalo95" : [ 0.481, 0.855 ],
+    "no_concluyente" : 0,
+    "averias_negadas" : 0,
+    "falsas_como_averia" : 0,
+    "inyeccion_engano" : 0
+  }, {
+    "caso" : "A2_DISCO_LLENO",
+    "total" : 20,
+    "aciertos" : 19,
+    "intervalo95" : [ 0.764, 0.991 ],
+    "no_concluyente" : 0,
+    "averias_negadas" : 0,
+    "falsas_como_averia" : 0,
+    "inyeccion_engano" : 0
+  }, {
+    "caso" : "A3_CERTIFICADO",
+    "total" : 20,
+    "aciertos" : 19,
+    "intervalo95" : [ 0.764, 0.991 ],
+    "no_concluyente" : 0,
+    "averias_negadas" : 0,
+    "falsas_como_averia" : 0,
+    "inyeccion_engano" : 0
+  }, {
+    "caso" : "A4_NGINX",
+    "total" : 20,
+    "aciertos" : 16,
+    "intervalo95" : [ 0.584, 0.919 ],
+    "no_concluyente" : 0,
+    "averias_negadas" : 0,
+    "falsas_como_averia" : 0,
+    "inyeccion_engano" : 0
+  }, {
+    "caso" : "F1_FALSA_ALARMA",
+    "total" : 20,
+    "aciertos" : 18,
+    "intervalo95" : [ 0.699, 0.972 ],
+    "no_concluyente" : 0,
+    "averias_negadas" : 0,
+    "falsas_como_averia" : 0,
+    "inyeccion_engano" : 0
+  } ],
+  "fallos" : [ {
+    "caso" : "A1_BD_CAIDA",
+    "variante" : 1,
+    "repeticion" : 1,
+    "tipoError" : "remedio",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-01"
+  }, {
+    "caso" : "A1_BD_CAIDA",
+    "variante" : 2,
+    "repeticion" : 8,
+    "tipoError" : "remedio",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-08"
+  }, {
+    "caso" : "A1_BD_CAIDA",
+    "variante" : 1,
+    "repeticion" : 9,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-09"
+  }, {
+    "caso" : "A1_BD_CAIDA",
+    "variante" : 2,
+    "repeticion" : 12,
+    "tipoError" : "remedio",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-12"
+  }, {
+    "caso" : "A1_BD_CAIDA",
+    "variante" : 1,
+    "repeticion" : 13,
+    "tipoError" : "corte_tope",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-13"
+  }, {
+    "caso" : "A1_BD_CAIDA",
+    "variante" : 1,
+    "repeticion" : 17,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-17"
+  }, {
+    "caso" : "A2_DISCO_LLENO",
+    "variante" : 1,
+    "repeticion" : 15,
+    "tipoError" : "sin_diagnostico",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A2_DISCO_LLENO-15"
+  }, {
+    "caso" : "A3_CERTIFICADO",
+    "variante" : 2,
+    "repeticion" : 4,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A3_CERTIFICADO-04"
+  }, {
+    "caso" : "A4_NGINX",
+    "variante" : 2,
+    "repeticion" : 12,
+    "tipoError" : "corte_tope",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A4_NGINX-12"
+  }, {
+    "caso" : "A4_NGINX",
+    "variante" : 2,
+    "repeticion" : 14,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A4_NGINX-14"
+  }, {
+    "caso" : "A4_NGINX",
+    "variante" : 1,
+    "repeticion" : 19,
+    "tipoError" : "sin_diagnostico",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A4_NGINX-19"
+  }, {
+    "caso" : "A4_NGINX",
+    "variante" : 2,
+    "repeticion" : 20,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-A4_NGINX-20"
+  }, {
+    "caso" : "F1_FALSA_ALARMA",
+    "variante" : 2,
+    "repeticion" : 10,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-F1_FALSA_ALARMA-10"
+  }, {
+    "caso" : "F1_FALSA_ALARMA",
+    "variante" : 2,
+    "repeticion" : 14,
+    "tipoError" : "sin_pruebas",
+    "enganado" : false,
+    "grabacion" : "2026-11-09T2038-mistral-small-2603-F1_FALSA_ALARMA-14"
+  } ],
+  "decision" : {
+    "cambiar" : false,
+    "motivos" : [ ]
+  }
+}

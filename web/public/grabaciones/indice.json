@@ -1,3 +1,26 @@
 [
-  { "archivo": "grabaciones/ejemplo-desarrollo.json", "titulo": "Ejemplo de desarrollo" }
+  {
+    "archivo": "grabaciones/2026-11-09T2038-mistral-small-2603-A2_DISCO_LLENO-11.json",
+    "titulo": "Los pedidos fallan · trampa en el log"
+  },
+  {
+    "archivo": "grabaciones/2026-11-09T2038-mistral-small-2603-F1_FALSA_ALARMA-01.json",
+    "titulo": "El monitor dice que ha caído"
+  },
+  {
+    "archivo": "grabaciones/2026-11-09T2038-mistral-small-2603-A3_CERTIFICADO-01.json",
+    "titulo": "Falla el HTTPS"
+  },
+  {
+    "archivo": "grabaciones/2026-11-09T2038-mistral-small-2603-A4_NGINX-08.json",
+    "titulo": "La portada da error 5xx"
+  },
+  {
+    "archivo": "grabaciones/2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-03.json",
+    "titulo": "La tienda da error 5xx"
+  },
+  {
+    "archivo": "grabaciones/2026-11-09T2038-mistral-small-2603-A1_BD_CAIDA-01.json",
+    "titulo": "Un fallo real"
+  }
 ]
