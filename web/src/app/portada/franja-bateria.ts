@@ -65,27 +65,62 @@ export class Cuenta implements OnInit {
   }
 }
 
+/** Marca el elemento cuando llega a la pantalla; el CSS decide qué se mueve. */
+@Directive({ selector: '[triageEncender]' })
+export class Encender implements OnInit {
+  private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  ngOnInit(): void {
+    const el = this.elemento.nativeElement;
+    if (typeof IntersectionObserver === 'undefined') {
+      el.classList.add('encendida');
+      return;
+    }
+    const observador = new IntersectionObserver(
+      ([entrada]) => {
+        if (entrada.isIntersecting) {
+          observador.disconnect();
+          el.classList.add('encendida');
+        }
+      },
+      { threshold: 0.15 },
+    );
+    observador.observe(el);
+  }
+}
+
 @Component({
   selector: 'triage-franja',
-  imports: [Cuenta],
+  imports: [Cuenta, Encender],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="franja" aria-labelledby="titulo-franja">
       <h2 id="titulo-franja">Cuánto acierta, fallos incluidos</h2>
       @if (informe(); as i) {
         <p class="franja-resumen">
-          <strong><span [triageCuenta]="i.global.aciertos"></span> de {{ i.global.total }}</strong>
+          <strong class="franja-cifra"><span [triageCuenta]="i.global.aciertos"></span> de {{ i.global.total }}</strong>
           aciertos · margen {{ margen(i.global) }} % al 95 %
           · <span class="suave">{{ i.versionModelo }}, {{ fecha() }}</span>
         </p>
         @if (!i.completa) {
           <p class="nota">Batería incompleta: se paró al llegar al gasto confirmado.</p>
         }
-        <ul class="franja-casos">
-          @for (c of i.casos; track c.caso) {
+        <p class="ayuda">Cada cuadro es una investigación real. Los rojos son fallos: ábrelos y mira qué hizo mal.</p>
+        <ul class="franja-casos" triageEncender>
+          @for (fila of filas(); track fila.caso) {
             <li>
-              <span class="caso-nombre">{{ nombres[c.caso] ?? c.caso }}</span>
-              <span class="caso-dato">{{ c.aciertos }}/{{ c.total }}</span>
+              <span class="caso-nombre">{{ nombres[fila.caso] ?? fila.caso }}</span>
+              <span class="celdas">
+                @for (celda of fila.celdas; track celda.orden) {
+                  @if (celda.fallo; as f) {
+                    <button type="button" class="celda mal" [style.--i]="celda.orden" [title]="f.tipoError"
+                      [attr.aria-label]="'Ver el fallo de la repetición ' + f.repeticion + ': ' + f.tipoError" (click)="verFallo.emit(f.grabacion)">×</button>
+                  } @else {
+                    <span class="celda bien" [style.--i]="celda.orden" aria-hidden="true"></span>
+                  }
+                }
+              </span>
+              <span class="caso-dato">{{ fila.aciertos }}/{{ fila.total }}</span>
             </li>
           }
         </ul>
@@ -115,6 +150,19 @@ export class FranjaBateria {
   protected readonly informe = computed(() => {
     const d = this.datos();
     return d && !('pendiente' in d) ? d : null;
+  });
+  protected readonly filas = computed(() => {
+    const i = this.informe();
+    let orden = 0;
+    return (i?.casos ?? []).map((c) => ({
+      caso: c.caso,
+      aciertos: c.aciertos,
+      total: c.total,
+      celdas: Array.from({ length: c.total }, (_, n) => ({
+        orden: orden++,
+        fallo: i?.fallos.find((f) => f.caso === c.caso && f.repeticion === n + 1) ?? null,
+      })),
+    }));
   });
   protected readonly inyeccion = computed(() => this.informe()?.casos.find((c) => c.caso === 'A2_DISCO_LLENO'));
   protected readonly fecha = computed(() => {

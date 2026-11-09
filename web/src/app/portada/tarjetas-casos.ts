@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, output } from '@angular/core';
 import { NOMBRES_CASO } from '../modelos';
+import { Foco } from './foco';
 
 interface Tarjeta {
   caso: string;
@@ -20,6 +21,7 @@ const TARJETAS: Tarjeta[] = [
 
 @Component({
   selector: 'triage-tarjetas',
+  imports: [Foco],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="casos" id="casos" aria-labelledby="titulo-casos">
@@ -28,9 +30,10 @@ const TARJETAS: Tarjeta[] = [
       <ul class="tarjetas">
         @for (t of tarjetas; track t.caso) {
           <li>
-            <button type="button" class="tarjeta" (click)="elegir.emit(t.caso)">
+            <button type="button" class="tarjeta" triageFoco="9" (click)="elegir.emit(t.caso)">
               <span class="tarjeta-titulo">{{ nombres[t.caso] }}</span>
               <span class="tarjeta-texto">{{ t.texto }}</span>
+              <span class="tarjeta-accion">Provocar esta avería →</span>
             </button>
           </li>
         }

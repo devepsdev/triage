@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ElementRef, afterNextRender, Injector, inject, signal, viewChild } from '@angular/core';
+import { ApplicationRef, ChangeDetectionStrategy, Component, ElementRef, afterNextRender, Injector, inject, signal, viewChild } from '@angular/core';
 import { ApiTriage, EstadoPublico } from '../api';
 import { Investigacion, RECHAZOS } from '../investigacion/investigacion';
 import { Diagrama } from './diagrama';
@@ -17,6 +17,7 @@ export interface EntradaIndice {
   imports: [Hero, FranjaBateria, TarjetasCasos, Diagrama, Investigacion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <div class="capas" aria-hidden="true"><span></span><span></span></div>
     <main>
       <triage-hero [archivo]="archivo()" />
 
@@ -55,6 +56,7 @@ export class Portada {
   private readonly http = inject(HttpClient);
   private readonly api = inject(ApiTriage);
   private readonly injector = inject(Injector);
+  private readonly aplicacion = inject(ApplicationRef);
   private readonly panel = viewChild.required<ElementRef<HTMLElement>>('panel');
 
   protected readonly textos = RECHAZOS;
@@ -77,13 +79,25 @@ export class Portada {
   }
 
   protected elegir(caso: string): void {
-    this.caso.set(caso);
+    this.conTransicion(() => this.caso.set(caso));
     afterNextRender(() => this.panel().nativeElement.scrollIntoView({ block: 'start' }), { injector: this.injector });
   }
 
   protected ver(archivo: string): void {
-    this.archivo.set(archivo);
+    this.conTransicion(() => this.archivo.set(archivo));
     this.irAGrabacion();
+  }
+
+  /** El navegador funde el estado anterior con el nuevo. Si no sabe hacerlo, el cambio ocurre sin más. */
+  private conTransicion(cambio: () => void): void {
+    if (!document.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      cambio();
+      return;
+    }
+    document.startViewTransition(() => {
+      cambio();
+      this.aplicacion.tick();
+    });
   }
 
   protected irAGrabacion(): void {

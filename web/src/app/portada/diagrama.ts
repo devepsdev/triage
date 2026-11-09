@@ -26,6 +26,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
           <p>El único con acceso a Docker, con operaciones fijas. Arreglar va por otro socket al que el servidor MCP no tiene permiso de entrar.</p>
         </li>
       </ol>
+      <p class="corte"><span>De triage-mcp a Docker no hay camino: el socket de control solo admite a triage-api.</span></p>
     </section>
   `,
 })

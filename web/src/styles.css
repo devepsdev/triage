@@ -19,6 +19,8 @@
   --lateral: clamp(16px, 4vw, 56px);
 }
 
+@property --giro { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 20px; -webkit-font-smoothing: antialiased; }
@@ -114,9 +116,15 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 .franja h2 { font-size: 1.15rem; color: var(--suave); font-weight: 550; }
 .franja-resumen { margin-top: 8px; font-variant-numeric: tabular-nums; }
 .franja-resumen strong { font-size: 1.9rem; font-weight: 700; color: var(--texto); }
+.franja-resumen .franja-cifra { display: block; font-size: clamp(3rem, 8vw, 5.5rem); line-height: 1; letter-spacing: -0.03em; margin-bottom: 8px; }
 .franja-pendiente { margin-top: 8px; font-size: 1.15rem; }
-.franja-casos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin-top: 16px; }
-.franja-casos li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; font-size: 0.9rem; }
+.franja-casos { display: grid; gap: 8px; margin-top: 16px; }
+.franja-casos li { display: grid; grid-template-columns: minmax(150px, 210px) minmax(0, 1fr) auto; align-items: center; gap: 12px 20px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; font-size: 0.9rem; }
+.celdas { display: grid; grid-template-columns: repeat(auto-fill, 24px); gap: 4px; }
+.celda { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 5px; font: 500 0.9rem/1 var(--mono); }
+.celda.bien { background: color-mix(in srgb, var(--verde) 72%, var(--panel)); }
+.celda.mal { background: var(--rojo); color: #2a0d07; cursor: pointer; }
+.celda.mal:hover { background: #ffa394; }
 .caso-dato { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .franja-inyeccion { margin-top: 14px; }
 .fallos li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--linea); }
@@ -126,7 +134,7 @@ summary { cursor: pointer; font: 500 0.82rem var(--mono); color: var(--suave); p
 .ayuda { color: var(--suave); margin-top: 6px; }
 .nota { color: var(--suave); font-size: 0.9rem; }
 
-.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 20px; }
+.tarjetas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
 .tarjetas li { display: flex; }
 .tarjeta {
   display: flex;
@@ -145,8 +153,24 @@ summary { cursor: pointer; font: 500 0.82rem var(--mono); color: var(--suave); p
 }
 .tarjeta:hover { border-color: var(--ambar); transform: translateY(-3px); }
 .tarjeta:active { transform: translateY(0) scale(0.99); }
+.hero { position: relative; }
 .tarjeta-titulo { font-size: 1.1rem; font-weight: 650; }
 .tarjeta-texto { color: var(--suave); font-size: 0.93rem; text-wrap: pretty; }
+.tarjeta-titulo::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--rojo); vertical-align: 0.12em; }
+.tarjeta-accion { margin-top: auto; padding-top: 8px; font: 500 0.8rem var(--mono); color: var(--ambar); }
+.tarjeta:hover { box-shadow: 0 18px 40px -24px var(--ambar); }
+
+/* Monitor de latidos: nace de la palabra triage y separa el resultado de la explicación. */
+.monitor { height: 64px; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.monitor svg { display: block; width: 100%; height: 100%; }
+.monitor path { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.monitor-base { stroke: var(--linea); }
+.monitor-pulso { stroke: var(--ambar); stroke-dasharray: 0.16 0.84; opacity: 0; }
+
+.corte { display: flex; align-items: center; gap: 14px; margin-top: 22px; font: 500 0.8rem var(--mono); color: var(--rojo); text-align: center; }
+.corte span { flex: 0 1 auto; }
+.corte::before, .corte::after { content: ''; flex: 1 1 40px; height: 2px; background: repeating-linear-gradient(90deg, var(--rojo) 0 8px, transparent 8px 16px); }
+.corte::after { opacity: 0.25; }
 
 .piezas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 24px; }
 .pieza { position: relative; padding: 20px; background: var(--panel); border: 1px solid var(--linea); border-radius: var(--radio); }
@@ -204,8 +228,20 @@ summary { cursor: pointer; font: 500 0.82rem var(--mono); color: var(--suave); p
   .hero { grid-template-columns: minmax(0, 1fr); }
   .pantalla { height: min(58vh, 480px); }
   .piezas { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .franja-casos li { grid-template-columns: minmax(0, 1fr) auto; }
+  .celdas { grid-column: 1 / -1; grid-row: 2; }
   .pieza:not(:last-child)::after { top: 100%; left: 32px; width: 2px; height: 32px; transform-origin: top; }
   .alerta, .fila { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+
+@media (max-width: 1180px) {
+  .tarjetas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tarjetas li:last-child { grid-column: span 2; }
+}
+
+@media (max-width: 700px) {
+  .tarjetas { grid-template-columns: minmax(0, 1fr); }
+  .tarjetas li:last-child { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -224,16 +260,26 @@ summary { cursor: pointer; font: 500 0.82rem var(--mono); color: var(--suave); p
   .pasos li::before { animation: dibujar 420ms ease-out backwards; }
   .diagnostico, .aprobacion, .resultado, .fin { animation: subir 360ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
   .estado.vivo::before { animation: latir 1.3s ease-in-out infinite; }
+  .tarjeta-titulo::before { animation: latir 1.6s ease-in-out infinite; }
+  .monitor-pulso { opacity: 1; animation: pulso 5s linear infinite; }
+  .celda { transition: opacity 260ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1), background-color 120ms ease; transition-delay: calc(var(--i) * 13ms); }
+  .franja-casos:not(.encendida) .celda { opacity: 0.08; transform: scale(0.55); }
+  .celda.mal:hover { transform: scale(1.18); transition-delay: 0ms; }
+  .pieza:not(:last-child)::before { content: ''; position: absolute; top: calc(50% - 3px); left: 100%; width: 8px; height: 8px; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 12px var(--ambar); animation: viajar 2.2s ease-in-out infinite; }
+  .corte::before { animation: avanzar 0.8s linear infinite; }
 
   @supports (animation-timeline: view()) {
     body::before { animation: quedarse linear both; animation-timeline: scroll(root); }
     .tarjetas li { animation: inclinar linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+    .hero-grabacion { animation: flotar linear both; animation-timeline: scroll(root); animation-range: 0 70vh; }
     .pieza { animation: montar linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
     .pieza:not(:last-child)::after { animation: dibujar-horizontal linear both; animation-timeline: view(); animation-range: entry 45% entry 100%; }
   }
 }
 
 @media (prefers-reduced-motion: no-preference) and (max-width: 960px) {
+  .hero-grabacion { animation: none !important; }
+  .pieza:not(:last-child)::before { top: 100%; left: 29px; animation-name: viajar-abajo; }
   @supports (animation-timeline: view()) {
     .pieza:not(:last-child)::after { animation-name: dibujar; }
   }
@@ -247,4 +293,72 @@ summary { cursor: pointer; font: 500 0.82rem var(--mono); color: var(--suave); p
 @keyframes dibujar { from { transform: scaleY(0); } }
 @keyframes dibujar-horizontal { from { transform: scaleX(0); } }
 @keyframes latir { 50% { opacity: 0.3; } }
+@keyframes pulso { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes flotar { to { transform: translateY(-40px); } }
+@keyframes viajar { from { transform: translateX(0); opacity: 0; } 15%, 85% { opacity: 1; } to { transform: translateX(32px); opacity: 0; } }
+@keyframes viajar-abajo { from { transform: translateY(0); opacity: 0; } 15%, 85% { opacity: 1; } to { transform: translateY(24px); opacity: 0; } }
+@keyframes avanzar { to { background-position-x: 16px; } }
 @keyframes quedarse { to { transform: translateY(14vh); } }
+
+/* Capas de luz, foco del cursor y scroll. Solo adornan: sin ellas la página se lee igual. */
+@media (prefers-reduced-motion: no-preference) {
+  html { interpolate-size: allow-keywords; }
+
+  .capas span { position: fixed; z-index: -1; aspect-ratio: 1; border-radius: 50%; pointer-events: none; }
+  .capas span:first-child { top: -28vh; right: -18vw; width: 62vw; background: radial-gradient(closest-side, color-mix(in srgb, var(--ambar) 13%, transparent), transparent); }
+  .capas span:last-child { top: 62vh; left: -22vw; width: 54vw; background: radial-gradient(closest-side, color-mix(in srgb, var(--verde) 9%, transparent), transparent); }
+
+  .hero::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(460px circle at var(--x, 28%) var(--y, 24%), color-mix(in srgb, var(--ambar) 11%, transparent), transparent 72%); }
+
+  .pantalla {
+    border-color: transparent;
+    background: linear-gradient(var(--panel), var(--panel)) padding-box, conic-gradient(from var(--giro), var(--linea) 0 68%, var(--ambar) 84%, var(--verde) 90%, var(--linea) 100%) border-box;
+    animation: girar 7s linear infinite;
+  }
+
+  .tarjeta {
+    background: radial-gradient(280px circle at var(--x, 50%) var(--y, 0%), color-mix(in srgb, var(--ambar) 12%, transparent), transparent 72%), var(--panel);
+    transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 140ms ease-out, border-color 160ms ease, box-shadow 200ms ease;
+  }
+  .tarjeta:hover { transform: perspective(800px) translateY(-4px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
+  .tarjeta:active { transform: perspective(800px) scale(0.985); }
+
+  .hero-texto h1 { animation-name: asentarse-peso; animation-duration: 900ms; }
+
+  details::details-content { height: 0; overflow: clip; transition: height 320ms ease, content-visibility 320ms allow-discrete; }
+  details[open]::details-content { height: auto; }
+
+  .hero-grabacion { view-transition-name: grabacion; }
+  .panel-investigacion:not(:empty) { view-transition-name: investigacion; }
+  ::view-transition-old(grabacion) { animation: 220ms ease-in both salir-hacia-arriba; }
+  ::view-transition-new(grabacion) { animation: 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both entrar-desde-abajo; }
+  ::view-transition-new(investigacion) { animation: 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both entrar-desde-abajo; }
+
+  @supports (animation-timeline: view()) {
+    body::after { content: ''; position: fixed; inset: 0 0 auto; z-index: 10; height: 2px; background: linear-gradient(90deg, var(--ambar), var(--verde)); transform-origin: left; animation: progreso linear both; animation-timeline: scroll(root); }
+    .capas span:first-child { animation: capa-lenta linear both; animation-timeline: scroll(root); }
+    .capas span:last-child { animation: capa-rapida linear both; animation-timeline: scroll(root); }
+    .franja h2, .casos h2, .diagrama h2 { animation: revelar linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
+    .monitor { animation: abrir-monitor linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    .franja-casos li { animation: subir linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+    .corte { animation: revelar linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 961px) {
+  @supports (animation-timeline: view()) {
+    .hero-texto { animation: flotar-texto linear both; animation-timeline: scroll(root); animation-range: 0 70vh; }
+  }
+}
+
+@keyframes girar { to { --giro: 360deg; } }
+@keyframes asentarse-peso { from { transform: translateY(10px); font-weight: 400; letter-spacing: 0; } }
+@keyframes salir-hacia-arriba { to { opacity: 0; transform: translateY(-16px); } }
+@keyframes entrar-desde-abajo { from { opacity: 0; transform: translateY(22px) scale(0.985); } }
+@keyframes progreso { from { transform: scaleX(0); } }
+@keyframes capa-lenta { to { transform: translateY(26vh) scale(1.15); } }
+@keyframes capa-rapida { to { transform: translateY(-58vh) scale(0.9); } }
+@keyframes revelar { from { opacity: 0; transform: translateX(-26px); clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -5% 0 0); } }
+@keyframes abrir-monitor { from { transform: scaleX(0.7); opacity: 0.2; } }
+@keyframes flotar-texto { to { transform: translateY(46px); } }
