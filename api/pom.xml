@@ -19,6 +19,7 @@
     <modules>
         <module>triage-comun</module>
         <module>triage-gestor</module>
+        <module>triage-mcp</module>
         <module>triage-api</module>
     </modules>
 
