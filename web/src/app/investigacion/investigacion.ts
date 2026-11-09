@@ -6,7 +6,7 @@ import { Accion } from './aprobacion';
 import { Captcha } from './captcha';
 import { LineaTemporal } from './linea-temporal';
 
-const RECHAZOS: Record<string, string> = {
+export const RECHAZOS: Record<string, string | undefined> = {
   OCUPADO: 'Ahora mismo hay otra investigación en marcha. Solo se hace una a la vez.',
   LIMITE_IP: 'Ya has lanzado las investigaciones de hoy desde esta conexión.',
   LIMITE_DIARIO: 'Por hoy se han acabado las investigaciones en directo.',

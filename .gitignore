@@ -6,3 +6,4 @@ dist/
 .angular/
 .idea/
 .vscode/
+.claude/

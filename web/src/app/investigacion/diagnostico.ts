@@ -16,7 +16,7 @@ import { CAUSAS, Correccion, Diagnostico, REMEDIOS, VEREDICTOS } from '../modelo
         <h4>Pruebas</h4>
         <ul class="pruebas">
           @for (prueba of diagnostico().pruebas; track $index) {
-            <li><a [href]="'#' + prefijo() + 'paso-' + prueba.idLlamada">Paso {{ prueba.idLlamada }}</a> <code>{{ prueba.cita }}</code></li>
+            <li><a [href]="'#' + prefijo() + 'paso-' + prueba.idLlamada">Paso {{ numero(prueba.idLlamada) }}</a> <code>{{ prueba.cita }}</code></li>
           }
         </ul>
       }
@@ -40,6 +40,10 @@ export class DiagnosticoVista {
   readonly diagnostico = input.required<Diagnostico>();
   readonly correccion = input<Correccion | null>(null);
   readonly prefijo = input('');
+
+  protected numero(idLlamada: string): string {
+    return idLlamada.replace(/^c/, '');
+  }
 
   protected readonly veredicto = computed(() => VEREDICTOS[this.diagnostico().veredicto] ?? this.diagnostico().veredicto);
   protected readonly causa = computed(() => {

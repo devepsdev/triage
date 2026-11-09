@@ -140,7 +140,7 @@ export function vistaDe(eventos: readonly EventoTriage[]): Vista {
   return vista;
 }
 
-export const ESTADOS: Record<string, string> = {
+export const ESTADOS: Record<string, string | undefined> = {
   PREPARANDO: 'Levantando la tienda',
   PROVOCANDO: 'Provocando la avería',
   INVESTIGANDO: 'El agente investiga',
@@ -154,13 +154,13 @@ export const ESTADOS: Record<string, string> = {
   FALLIDA: 'No se ha podido completar',
 };
 
-export const VEREDICTOS: Record<string, string> = {
+export const VEREDICTOS: Record<string, string | undefined> = {
   averia: 'Hay una avería',
   falsa_alarma: 'Falsa alarma',
   no_concluyente: 'No concluyente',
 };
 
-export const CAUSAS: Record<string, string> = {
+export const CAUSAS: Record<string, string | undefined> = {
   bd_parada: 'La base de datos está parada',
   bd_sin_conexiones: 'La base de datos se ha quedado sin conexiones',
   disco_lleno: 'El disco de la aplicación está lleno',
@@ -173,7 +173,7 @@ export const CAUSAS: Record<string, string> = {
   comprobacion_desfasada: 'La comprobación está desfasada: el servicio funciona',
 };
 
-export const REMEDIOS: Record<string, string> = {
+export const REMEDIOS: Record<string, string | undefined> = {
   arrancar_bd: 'Arrancar la base de datos',
   liberar_logs: 'Vaciar los logs que llenan el disco',
   renovar_certificado: 'Instalar un certificado válido',
@@ -194,7 +194,7 @@ export const OPERACIONES: Record<string, string[]> = {
   restaurar_nginx: ['cp /opt/triage/nginx.conf.plantilla /etc/nginx/conf.d/tienda.conf', 'nginx -s reload'],
 };
 
-export const FINALES: Record<string, string> = {
+export const FINALES: Record<string, string | undefined> = {
   remedio_verificado: 'Arreglo aplicado y comprobado: la tienda responde.',
   remedio_no_verificado: 'Se aplicó el arreglo, pero la comprobación no ha pasado.',
   remedio_fallido: 'No se ha podido aplicar el arreglo.',
@@ -211,7 +211,7 @@ export const FINALES: Record<string, string> = {
   reinicio: 'El servicio se reinició durante la investigación.',
 };
 
-export const NOMBRES_CASO: Record<string, string> = {
+export const NOMBRES_CASO: Record<string, string | undefined> = {
   A1_BD_CAIDA: 'La tienda da error 5xx',
   A2_DISCO_LLENO: 'Los pedidos fallan',
   A3_CERTIFICADO: 'Falla el HTTPS',

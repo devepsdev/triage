@@ -1,11 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Portada } from './portada/portada';
 
 @Component({
   selector: 'app-root',
-  imports: [],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  imports: [Portada],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<triage-portada />',
 })
-export class App {
-  protected readonly title = signal('web');
-}
+export class App {}
