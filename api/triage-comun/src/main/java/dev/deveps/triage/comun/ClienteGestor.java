@@ -1,5 +1,6 @@
 package dev.deveps.triage.comun;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnixDomainSocketAddress;
@@ -11,6 +12,8 @@ import java.nio.file.Path;
 
 /** Cliente del gestor por socket local. Una conexión por petición. */
 public final class ClienteGestor {
+
+    private static final int MAX_CABECERA = 128;
 
     private final Path socket;
 
@@ -26,26 +29,51 @@ public final class ClienteGestor {
                 canal.write(salida);
             }
             try (InputStream entrada = Channels.newInputStream(canal)) {
-                return interpretar(entrada.readAllBytes());
+                return leerRespuesta(entrada);
             }
         } catch (IOException e) {
             throw new GestorException("conexion");
         }
     }
 
-    private static String interpretar(byte[] datos) throws GestorException {
-        String texto = new String(datos, StandardCharsets.UTF_8);
-        int salto = texto.indexOf('\n');
-        if (salto < 0) {
-            throw new GestorException("protocolo");
-        }
-        String cabecera = texto.substring(0, salto);
+    /** Lee los bytes que anuncia la cabecera, sin esperar al cierre: en Windows el aviso de cierre a veces no llega y el cliente se quedaría colgado. */
+    private static String leerRespuesta(InputStream entrada) throws IOException, GestorException {
+        String cabecera = leerCabecera(entrada);
         if (cabecera.startsWith("ERR ")) {
             throw new GestorException(cabecera.substring(4));
         }
         if (!cabecera.startsWith("OK ")) {
             throw new GestorException("protocolo");
         }
-        return texto.substring(salto + 1);
+        int longitud = longitud(cabecera.substring(3));
+        byte[] cuerpo = entrada.readNBytes(longitud);
+        if (cuerpo.length != longitud) {
+            throw new GestorException("protocolo");
+        }
+        return new String(cuerpo, StandardCharsets.UTF_8);
+    }
+
+    private static String leerCabecera(InputStream entrada) throws IOException, GestorException {
+        ByteArrayOutputStream cabecera = new ByteArrayOutputStream();
+        int b;
+        while ((b = entrada.read()) != '\n') {
+            if (b < 0 || cabecera.size() >= MAX_CABECERA) {
+                throw new GestorException("protocolo");
+            }
+            cabecera.write(b);
+        }
+        return cabecera.toString(StandardCharsets.UTF_8);
+    }
+
+    private static int longitud(String texto) throws GestorException {
+        try {
+            int valor = Integer.parseInt(texto);
+            if (valor < 0) {
+                throw new GestorException("protocolo");
+            }
+            return valor;
+        } catch (NumberFormatException e) {
+            throw new GestorException("protocolo");
+        }
     }
 }
