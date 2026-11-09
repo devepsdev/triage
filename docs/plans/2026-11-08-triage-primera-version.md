@@ -120,7 +120,7 @@ BarrenderoTest.solo_toca_recursos_con_etiqueta_triage_env; .borra_todo_lo_suyo_a
 
 - [ ] **Step 1: Tests que fallan.**
 ```java
-SaneadoTest.quita_ansi_y_control; .recorta_a_4096_bytes_conservando_el_final; .no_deja_marcas_del_host: "51.77.158.216", "/var/lib/docker", ids de 64 hex
+SaneadoTest.quita_ansi_y_control; .recorta_a_4096_bytes_conservando_el_final; .no_deja_marcas_del_host: cualquier IP pública, "/var/lib/docker", ids de 64 hex
 ConsultasTest.servicio_parado: exec sobre contenedor parado → "servicio parado"; .leer_logs_usa_docker_logs_y_funciona_parado
 .rutas_fuera_de_enumeracion → ERR arg; .puerto_8081_es_valido; .lineas_0_y_201 → ERR arg
 ConsultasDockerIT.todas_responden_en_entorno_sano

@@ -41,6 +41,10 @@ final class Protocolo {
                 }));
     }
 
+    static Protocolo lectura(Consultas consultas) {
+        return new Protocolo(consultas.operaciones());
+    }
+
     String atender(String linea) {
         String[] partes = linea.split(" ", -1);
         if (!Arrays.stream(partes).allMatch(Protocolo::segura)) {

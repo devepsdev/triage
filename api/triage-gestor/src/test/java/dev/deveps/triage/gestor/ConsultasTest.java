@@ -121,9 +121,9 @@ class ConsultasTest {
 
     @Test
     void las_salidas_pasan_por_el_saneado() {
-        docker.respuesta = argv -> new Resultado(0, "\u001B[31mrojo\u001B[0m 51.77.158.216");
+        docker.respuesta = argv -> new Resultado(0, "\u001B[31mrojo\u001B[0m 203.0.113.7");
 
-        assertThat(pedir("leer_logs TOK web 5")).doesNotContain("\u001B", "51.77.158.216");
+        assertThat(pedir("leer_logs TOK web 5")).doesNotContain("\u001B", "203.0.113.7");
     }
 
     @Test
