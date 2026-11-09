@@ -33,12 +33,24 @@ public final class Main {
         Registro registro = new Registro(reloj, VIDA);
         Entornos entornos = new Entornos(registro, docker, Duration.ofSeconds(1));
 
-        try (ServidorSocket control = servidor("TRIAGE_CONTROL_SOCK", "TRIAGE_GRUPO_CONTROL", Protocolo.control(entornos));
+        Casos casos = new Casos(docker, Duration.ofSeconds(1));
+
+        try (ServidorSocket control = servidor("TRIAGE_CONTROL_SOCK", "TRIAGE_GRUPO_CONTROL", Protocolo.control(entornos, casos));
              ServidorSocket lectura = servidor("TRIAGE_LECTURA_SOCK", "TRIAGE_GRUPO_LECTURA", Protocolo.lectura(new Consultas(registro, docker, reloj)))) {
             control.arrancar();
             lectura.arrancar();
-            Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(entornos::destruirVencidos, 15, 15, TimeUnit.SECONDS);
+            Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(() -> barrer(entornos, barrendero, reloj), 15, 15, TimeUnit.SECONDS);
             new CountDownLatch(1).await();
+        }
+    }
+
+    /** Una excepción sin capturar cancelaría la tarea periódica y los entornos dejarían de caducar. */
+    private static void barrer(Entornos entornos, Barrendero barrendero, Clock reloj) {
+        try {
+            entornos.destruirVencidos();
+            barrendero.barrerCaducados(reloj.instant());
+        } catch (RuntimeException e) {
+            System.err.println("Fallo al barrer: " + e.getClass().getSimpleName());
         }
     }
 

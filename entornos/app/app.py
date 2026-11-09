@@ -1,10 +1,12 @@
 """Tienda ficticia sobre la que ocurren las averías. Todos los datos son inventados."""
 import json
+import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pg8000.dbapi
 
 LOG = "/var/log/app/app.log"
+RUTAS_V2 = "/tmp/rutas-v2"
 
 
 def salida(mensaje):
@@ -61,7 +63,13 @@ class Tienda(BaseHTTPRequestHandler):
 
         if ruta == "/":
             self.terminar(ruta, 200, "text/html; charset=utf-8", PORTADA)
-        elif ruta == "/demo/":
+        elif ruta == "/demo/" and os.path.exists(RUTAS_V2):
+            salida(f'GET {ruta} 301 ua="{self.headers.get("User-Agent", "-")}"')
+            self.send_response(301)
+            self.send_header("Location", "/demo/alba/")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+        elif ruta in ("/demo/", "/demo/alba/"):
             self.terminar(ruta, 200, "text/html; charset=utf-8", DEMO)
         elif ruta == "/api/pedidos":
             try:

@@ -62,6 +62,8 @@ final class ComandosDocker {
                 "--name", nombre(id, c), "--network", red(id), "--network-alias", c.alias,
                 "--read-only", "--cap-drop=ALL", "--security-opt", "no-new-privileges",
                 "--cgroup-parent=triage.slice", "--restart=no", "--log-opt", "max-size=2m",
+                // Sin esto, resolver el nombre de un servicio parado cuelga la petición más de 5 s y el fallo no parece un 5xx.
+                "--dns-opt", "timeout:1", "--dns-opt", "attempts:1",
                 "--label", "triage.env=" + id, "--label", "triage.caduca=" + caduca,
                 "--user", c.usuario, "--memory=" + c.memoria, "--memory-swap=" + c.memoria,
                 "--cpus=" + c.cpus, "--pids-limit=" + c.procesos));

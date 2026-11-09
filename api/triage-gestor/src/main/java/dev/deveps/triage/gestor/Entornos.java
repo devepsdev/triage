@@ -35,10 +35,12 @@ final class Entornos {
     }
 
     void destruir(String id) throws ErrorOperacion {
-        if (registro.porId(id).isEmpty()) {
-            throw new ErrorOperacion("id");
-        }
+        existente(id);
         limpiar(id);
+    }
+
+    Entorno existente(String id) throws ErrorOperacion {
+        return registro.porId(id).orElseThrow(() -> new ErrorOperacion("id"));
     }
 
     void destruirVencidos() {
