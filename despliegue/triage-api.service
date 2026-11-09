@@ -1,0 +1,47 @@
+# Bucle del agente, topes, estados y MySQL. Claves en /etc/triage/api.env (600 root:root): systemd las lee
+# como root antes de arrancar, así que el usuario del servicio no puede abrir ese archivo.
+[Unit]
+Description=Triage: API
+After=network-online.target mysql.service triage-gestor.service triage-mcp.service
+Wants=network-online.target triage-gestor.service triage-mcp.service
+
+[Service]
+User=triage-api
+Group=triage-api
+WorkingDirectory=/var/lib/triage-api
+EnvironmentFile=/etc/triage/api.env
+Environment=TRIAGE_CONTROL_SOCK=/run/triage-gestor/control.sock
+Environment=TRIAGE_HUECO=/run/triage-api/hueco.lock
+RuntimeDirectory=triage-api
+StateDirectory=triage-api
+StateDirectoryMode=0700
+ExecStart=/usr/bin/java -Xmx256m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -XX:-UsePerfData -jar /opt/triage/api/triage-api.jar
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+MemoryMax=512M
+
+# Sale a internet solo para el modelo y Turnstile; las redes privadas (donde viven los contenedores) quedan vetadas.
+IPAddressDeny=10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

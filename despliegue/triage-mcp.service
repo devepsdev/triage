@@ -1,0 +1,41 @@
+# Herramientas de solo lectura del agente. No tiene acceso a Docker ni a control.sock: solo a lectura.sock.
+[Unit]
+Description=Triage: servidor MCP de solo lectura
+After=triage-gestor.service
+Wants=triage-gestor.service
+
+[Service]
+User=triage-mcp
+Group=triage-mcp
+Environment=TRIAGE_LECTURA_SOCK=/run/triage-gestor/lectura.sock
+ExecStart=/usr/bin/java -Xmx128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -XX:-UsePerfData -jar /opt/triage/mcp/triage-mcp.jar
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+MemoryMax=320M
+
+# Solo escucha en local y solo habla con el gestor por su socket.
+IPAddressAllow=localhost
+IPAddressDeny=any
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

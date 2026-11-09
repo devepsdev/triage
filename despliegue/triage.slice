@@ -1,0 +1,8 @@
+# Techo común de los contenedores de las averías (el gestor los crea con --cgroup-parent=triage.slice).
+# Aunque fallaran los límites de cada contenedor, el resto del servidor no se queda sin memoria ni CPU.
+[Unit]
+Description=Triage: techo de recursos de los entornos desechables
+
+[Slice]
+MemoryMax=1G
+CPUQuota=200%

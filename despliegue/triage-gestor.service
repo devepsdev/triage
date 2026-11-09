@@ -1,0 +1,53 @@
+# Único proceso con acceso a Docker. Solo admite operaciones fijas por dos sockets locales:
+#   control.sock (grupo triage-api): crear, provocar, destruir, remediar, verificar
+#   lectura.sock (grupo triage-mcp): consultas de solo lectura
+# Pertenece a los grupos triage-api y triage-mcp solo porque, sin eso, no podría asignarles cada socket.
+[Unit]
+Description=Triage: gestor de entornos desechables
+After=docker.service
+Requires=docker.service
+
+[Service]
+User=triage-gestor
+Group=triage-gestor
+SupplementaryGroups=docker triage-api triage-mcp
+WorkingDirectory=/var/lib/triage-gestor
+Environment=HOME=/var/lib/triage-gestor
+Environment=TRIAGE_CONTROL_SOCK=/run/triage-gestor/control.sock
+Environment=TRIAGE_LECTURA_SOCK=/run/triage-gestor/lectura.sock
+Environment=TRIAGE_GRUPO_CONTROL=triage-api
+Environment=TRIAGE_GRUPO_LECTURA=triage-mcp
+RuntimeDirectory=triage-gestor
+RuntimeDirectoryMode=0755
+StateDirectory=triage-gestor
+StateDirectoryMode=0700
+ExecStart=/usr/bin/java -Xmx64m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -XX:-UsePerfData -cp /opt/triage/gestor/triage-gestor.jar:/opt/triage/gestor/triage-comun.jar dev.deveps.triage.gestor.Main
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+MemoryMax=192M
+
+# Habla con Docker por su socket local: no necesita red.
+IPAddressDeny=any
+RestrictAddressFamilies=AF_UNIX
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
