@@ -33,13 +33,18 @@ final class Protocolo {
                 "crear", args -> {
                     exigir(args.size() == 2);
                     Entorno e = entornos.crear(caso(args.get(0)), variante(args.get(1)));
+                    return e.id() + " " + e.token();
+                },
+                "provocar", args -> {
+                    exigir(args.size() == 1);
+                    Entorno e = entornos.existente(args.getFirst());
                     try {
                         casos.provocar(e);
                     } catch (ErrorOperacion x) {
                         entornos.destruir(e.id());
                         throw x;
                     }
-                    return e.id() + " " + e.token();
+                    return "";
                 },
                 "destruir", args -> {
                     exigir(args.size() == 1);

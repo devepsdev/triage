@@ -31,6 +31,7 @@ class CasosDockerIT {
         String[] datos = cuerpo(control.atender("crear " + caso + " " + variante)).split(" ");
         id = datos[0];
         token = datos[1];
+        assertThat(control.atender("provocar " + id)).startsWith("OK ");
     }
 
     private static String cuerpo(String respuesta) {

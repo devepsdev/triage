@@ -74,6 +74,10 @@ public final class ControlGasto {
                 .param(dia).param(necesario).param(tope).query(Long.class).single() == 1;
     }
 
+    public String moneda() {
+        return db.sql("SELECT moneda FROM precio_modelo WHERE version = ?").param(version).query(String.class).single();
+    }
+
     public BigDecimal gastadoHoy() {
         LocalDate dia = hoy();
         asegurarDia(dia);

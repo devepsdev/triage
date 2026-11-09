@@ -47,29 +47,23 @@ class ProtocoloTest {
     }
 
     @Test
-    void crear_provoca_la_averia_despues_de_levantar_la_tienda() {
-        control.atender("crear A1_BD_CAIDA 2");
+    void crear_deja_la_tienda_sana_y_provocar_la_rompe() {
+        String id = control.atender("crear A1_BD_CAIDA 2").split("\n")[1].split(" ")[0];
+        assertThat(docker.ordenes).noneMatch(argv -> argv.contains("kill"));
 
-        int primeraComprobacion = indiceDe(argv -> argv.contains("curl"));
-        int averia = indiceDe(argv -> argv.contains("kill"));
-        assertThat(primeraComprobacion).isNotNegative().isLessThan(averia);
-    }
+        assertThat(control.atender("provocar " + id)).isEqualTo("OK 0\n");
 
-    private int indiceDe(java.util.function.Predicate<List<String>> condicion) {
-        for (int i = 0; i < docker.ordenes.size(); i++) {
-            if (condicion.test(docker.ordenes.get(i))) {
-                return i;
-            }
-        }
-        return -1;
+        assertThat(docker.ordenes).anyMatch(argv -> argv.contains("kill"));
     }
 
     @Test
     void si_no_se_puede_provocar_la_averia_no_queda_entorno() {
+        String id = control.atender("crear A1_BD_CAIDA 2").split("\n")[1].split(" ")[0];
         docker.respuesta = argv -> new Resultado(argv.contains("kill") ? 1 : 0, "");
 
-        assertThat(control.atender("crear A1_BD_CAIDA 2")).isEqualTo("ERR docker\n");
+        assertThat(control.atender("provocar " + id)).isEqualTo("ERR docker\n");
         assertThat(docker.ordenes.getLast()).contains("network", "rm");
+        assertThat(control.atender("verificar " + id)).isEqualTo("ERR id\n");
     }
 
     @Test
@@ -97,6 +91,7 @@ class ProtocoloTest {
     void remediar_y_verificar_no_existen_en_lectura() {
         assertThat(lectura.atender("remediar abc ARRANCAR_BD")).isEqualTo("ERR op\n");
         assertThat(lectura.atender("verificar abc")).isEqualTo("ERR op\n");
+        assertThat(lectura.atender("provocar abc")).isEqualTo("ERR op\n");
     }
 
     @Test
