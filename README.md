@@ -6,7 +6,15 @@ Un agente de IA investiga averías reales de servidor en directo. Solo lee: el a
 
 Eliges una avería de un catálogo cerrado, se levanta una tienda ficticia en contenedores desechables y ves al agente trabajar paso a paso. Termina con un diagnóstico citando sus pruebas y, si procede, un arreglo que solo se aplica si una persona lo aprueba. Al acabar, el entorno se destruye.
 
+![Portada de Triage con una investigación grabada](docs/capturas/portada.png)
+
 Spring Boot 4 · Java 25 · Angular 21 · MCP · Docker · MySQL · systemd · nginx
+
+## Capturas
+
+![Tasa de acierto pública, con cada fallo a la vista](docs/capturas/aciertos.png)
+
+![Por qué el agente no puede arreglar: tres servicios y dos sockets](docs/capturas/arquitectura.png)
 
 ## Lo que hay que mirar
 
