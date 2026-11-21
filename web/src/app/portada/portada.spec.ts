@@ -30,7 +30,7 @@ describe('Hero', () => {
     const el = await pintar(TestBed.createComponent(Hero), {});
 
     expect(el.querySelector('h1')?.textContent).toBe('Un agente de IA investiga averías de servidor en directo. Solo lee: arreglar lo apruebas tú');
-    expect([...el.querySelectorAll('.chips li')].map((c) => c.textContent)).toEqual(['Spring Boot 4', 'Java 25', 'Angular 21', 'MCP', 'Docker']);
+    expect([...el.querySelectorAll('.chips li')].map((c) => c.textContent)).toEqual(['Spring Boot 4', 'Java 25', 'Angular 22', 'MCP', 'Docker']);
     expect(el.querySelector('a[href="#casos"]')?.textContent).toBe('Provoca una avería');
     expect(el.querySelector('a[href*="github.com"]')).not.toBeNull();
   });

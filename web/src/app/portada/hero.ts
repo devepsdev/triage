@@ -48,5 +48,5 @@ export class Hero {
   protected readonly titular = TITULAR;
   protected readonly latidos = 'M0 34 ' + Array(7).fill(LATIDO).join(' ');
   protected readonly repositorio = REPOSITORIO;
-  protected readonly chips = ['Spring Boot 4', 'Java 25', 'Angular 21', 'MCP', 'Docker'];
+  protected readonly chips = ['Spring Boot 4', 'Java 25', 'Angular 22', 'MCP', 'Docker'];
 }

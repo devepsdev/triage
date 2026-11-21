@@ -8,7 +8,7 @@ Eliges una avería de un catálogo cerrado, se levanta una tienda ficticia en co
 
 ![Portada de Triage con una investigación grabada](docs/capturas/portada.png)
 
-Spring Boot 4 · Java 25 · Angular 21 · MCP · Docker · MySQL · systemd · nginx
+Spring Boot 4 · Java 25 · Angular 22 · MCP · Docker · MySQL · systemd · nginx
 
 ## Capturas
 
