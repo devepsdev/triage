@@ -19,7 +19,8 @@ HOST="${HOST_VPS:-vps}"
 SSH="${SSH:-/c/Windows/System32/OpenSSH/ssh.exe}"
 FECHA=$(date +%Y%m%d-%H%M%S)
 COPIAS=/var/backups/triage/$FECHA
-export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Java/jdk-25.0.4.1}"
+# Enlace que mantiene el instalador de Oracle: sigue valiendo tras cada actualización de Java 25.
+export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Java/latest/jdk-25}"
 
 MODO=simulacro
 FASE=""
